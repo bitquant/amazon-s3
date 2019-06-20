@@ -1,0 +1,28 @@
+{
+  "name": "amazon-s3",
+  "version": "0.0.1",
+  "description": "Read and write to AWS S3 using fetch()",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bitquant/amazon-s3.git"
+  },
+  "keywords": [
+    "amazon",
+    "s3",
+    "aws",
+    "fetch"
+  ],
+  "author": "bitquant",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bitquant/amazon-s3/issues"
+  },
+  "homepage": "https://github.com/bitquant/amazon-s3#readme",
+  "dependencies": {
+    "crypto-js": "3.1.9-1"
+  }
+}
