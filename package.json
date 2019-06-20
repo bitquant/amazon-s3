@@ -1,6 +1,6 @@
 {
   "name": "amazon-s3",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Read and write to AWS S3 using fetch()",
   "main": "index.js",
   "scripts": {
