@@ -23,7 +23,7 @@ function signAndSendRequest(region, method, bucket, path, body) {
     const datestamp = amzdate.slice(0, 8)
 
     const service = 's3';
-    const host = `${bucket}.${service}.amazonaws.com`;
+    const host = `${bucket}.${service}.${region}.amazonaws.com`;
 
     path = path.split('/').map((part) => encodeURIComponent(part)).join('/')
 
