@@ -4,6 +4,15 @@ var hmacSha256 = require('crypto-js/hmac-sha256');
 var accessKey = null
 var secretKey = null
 
+//
+// Any S3 compatible service provider can be used. The default is AWS.
+//
+//   AWS             amazonaws.com
+//   Digital Ocean   digitaloceanspaces.com
+//   Scaleway        scw.cloud
+//
+var serviceProvider = 'amazonaws.com'
+
 /*
    Documentation:
    https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html
@@ -23,9 +32,7 @@ function signAndSendRequest(region, method, bucket, path, body) {
     const datestamp = amzdate.slice(0, 8)
 
     const service = 's3';
-    const host = `${bucket}.${service}.${region}.amazonaws.com`;
-
-    path = path.split('/').map((part) => encodeURIComponent(part)).join('/')
+    const host = `${bucket}.${service}.${region}.${serviceProvider}`;
 
     const endpoint = `https://${host}${path}`;
 
@@ -65,6 +72,9 @@ function signAndSendRequest(region, method, bucket, path, body) {
 exports.init = (config) => {
     accessKey = config.accessKey;
     secretKey = config.secretKey;
+    if (config.serviceProvider !== undefined) {
+        serviceProvider = config.serviceProvider;
+    }
 };
 
 exports.getObject = (region, bucket, filename) =>
