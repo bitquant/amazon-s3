@@ -20,7 +20,9 @@ S3.prototype.signAndSendRequest = function(method, bucket, path, body) {
     const datestamp = amzdate.slice(0, 8)
 
     const service = 's3';
-    const host = `${bucket}.${service}.${this.region}.${this.domain}`;
+    const host = (this.domain !== 'digitaloceanspaces.com')
+        ? `${bucket}.${service}.${this.region}.${this.domain}`
+        : `${bucket}.${this.region}.${this.domain}`
 
     const endpoint = `https://${host}${path}`;
 
