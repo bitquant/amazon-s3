@@ -1,18 +1,6 @@
 var sha256 = require('crypto-js/sha256');
 var hmacSha256 = require('crypto-js/hmac-sha256');
 
-var accessKey = null
-var secretKey = null
-
-//
-// Any S3 compatible service provider can be used. The default is AWS.
-//
-//   AWS             amazonaws.com
-//   Digital Ocean   digitaloceanspaces.com
-//   Scaleway        scw.cloud
-//
-var serviceProvider = 'amazonaws.com'
-
 /*
    Documentation:
    https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html
@@ -26,13 +14,13 @@ function getSignatureKey(key, dateStamp, regionName, serviceName) {
     return keySigning;
 }
 
-function signAndSendRequest(region, method, bucket, path, body) {
+S3.prototype.signAndSendRequest = function(method, bucket, path, body) {
 
     const amzdate = new Date().toISOString().replace(/[:-]|\.\d{3}/g, '')
     const datestamp = amzdate.slice(0, 8)
 
     const service = 's3';
-    const host = `${bucket}.${service}.${region}.${serviceProvider}`;
+    const host = `${bucket}.${service}.${this.region}.${this.domain}`;
 
     const endpoint = `https://${host}${path}`;
 
@@ -45,13 +33,13 @@ function signAndSendRequest(region, method, bucket, path, body) {
 
     const canonicalRequest = method + '\n' + canonicalUri + '\n' + canonicalQuerystring + '\n' + canonicalHeaders + '\n' + signedHeaders + '\n' + payloadHash;
 
-    const credentialScope = datestamp + '/' + region + '/' + service + '/' + 'aws4_request';
+    const credentialScope = datestamp + '/' + this.region + '/' + service + '/' + 'aws4_request';
     const stringToSign = algorithm + '\n' +  amzdate + '\n' +  credentialScope + '\n' +  sha256(canonicalRequest);
 
-    const signingKey = getSignatureKey(secretKey, datestamp, region, service);
+    const signingKey = getSignatureKey(this.secretKey, datestamp, this.region, service);
     const signature = hmacSha256(stringToSign, signingKey);
 
-    const authorizationHeader = algorithm + ' ' + 'Credential=' + accessKey + '/' + credentialScope + ',' +  'SignedHeaders=' + signedHeaders + ',' + 'Signature=' + signature;
+    const authorizationHeader = algorithm + ' ' + 'Credential=' + this.accessKey + '/' + credentialScope + ',' +  'SignedHeaders=' + signedHeaders + ',' + 'Signature=' + signature;
 
     const params = {
         method: method,
@@ -69,19 +57,34 @@ function signAndSendRequest(region, method, bucket, path, body) {
     return fetch(endpoint, params);
 }
 
-exports.init = (config) => {
-    accessKey = config.accessKey;
-    secretKey = config.secretKey;
-    if (config.serviceProvider !== undefined) {
-        serviceProvider = config.serviceProvider;
-    }
-};
+//
+// Any S3 compatible service provider can be used. The default is AWS.
+//
+//   AWS             amazonaws.com
+//   Digital Ocean   digitaloceanspaces.com
+//   Scaleway        scw.cloud
+//
+var defaultDomain = 'amazonaws.com'
 
-exports.getObject = (region, bucket, filename) =>
-    signAndSendRequest(region, 'GET', bucket, filename);
 
-exports.putObject = (region, bucket, filename, data) =>
-    signAndSendRequest(region, 'PUT', bucket, filename, data);
+function S3(config) {
 
-exports.deleteObject = (region, bucket, filename) =>
-    signAndSendRequest(region, 'DELETE', bucket, filename);
+    this.accessKey = config.accessKey;
+    this.secretKey = config.secretKey;
+    this.region = config.region;
+    this.domain = (config.domain !== undefined) ? config.domain : defaultDomain;
+}
+
+S3.prototype.getObject = function(params) {
+    return this.signAndSendRequest('GET', params.bucket, params.key);
+}
+
+S3.prototype.putObject = function(params) {
+    return this.signAndSendRequest('PUT', params.bucket, params.key, params.body);
+}
+
+S3.prototype.deleteObject = function(params) {
+    return this.signAndSendRequest('DELETE', params.bucket, params.key);
+}
+
+module.exports = S3;
