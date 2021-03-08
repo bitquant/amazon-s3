@@ -6,6 +6,23 @@ var hmacSha256 = require('crypto-js/hmac-sha256');
    https://docs.aws.amazon.com/AmazonS3/latest/API/sig-v4-header-based-auth.html
 */
 
+function encodeRfc3986(urlEncodedString) {
+  return urlEncodedString.replace(/[!'()*]/g, function(c) {
+    return '%' + c.charCodeAt(0).toString(16).toUpperCase()
+  })
+}
+
+function encodeRfc3986Full(str) {
+  return encodeRfc3986(encodeURIComponent(str))
+}
+
+function encodePath(path) {
+    path = decodeURIComponent(path.replace(/\+/g, ' '));
+    path = encodeRfc3986Full(path);
+    path = path.replace(/%2F/g, '/')
+    return path;
+}
+
 function getSignatureKey(key, dateStamp, regionName, serviceName) {
     var keyDate = hmacSha256(dateStamp, "AWS4" + key);
     var keyRegion = hmacSha256(regionName, keyDate);
@@ -24,9 +41,10 @@ S3.prototype.signAndSendRequest = function(method, bucket, path, body) {
         ? `${bucket}.${service}.${this.region}.${this.domain}`
         : `${bucket}.${this.region}.${this.domain}`
 
-    const endpoint = `https://${host}${path}`;
+    const encodedPath = encodePath(path);
+    const endpoint = `https://${host}${encodedPath}`;
 
-    const canonicalUri = path;
+    const canonicalUri = encodedPath;
     const canonicalQuerystring = '';
     const payloadHash = sha256(body).toString();
     const canonicalHeaders = `host:${host}\n` + `x-amz-content-sha256:${payloadHash}\n` + `x-amz-date:${amzdate}\n`;
