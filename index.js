@@ -46,7 +46,7 @@ S3.prototype.signAndSendRequest = function(method, bucket, path, body) {
 
     const canonicalUri = encodedPath;
     const canonicalQuerystring = '';
-    const payloadHash = sha256(body).toString();
+    const payloadHash = 'UNSIGNED-PAYLOAD';
     const canonicalHeaders = `host:${host}\n` + `x-amz-content-sha256:${payloadHash}\n` + `x-amz-date:${amzdate}\n`;
     const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
     const algorithm = 'AWS4-HMAC-SHA256';
