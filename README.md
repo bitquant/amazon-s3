@@ -21,7 +21,7 @@ var s3 = new S3({
     try {
 
         let bucket = 'testbucket';
-        let key = '/a/test/file.txt';
+        let key = 'a/test/file.txt';
         let body = 'test file contents';
 
         let putResponse = await s3.putObject({bucket, key, body})

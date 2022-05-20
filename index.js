@@ -37,11 +37,12 @@ S3.prototype.signAndSendRequest = function(method, bucket, path, body) {
     const datestamp = amzdate.slice(0, 8)
 
     const service = 's3';
-    const host = (this.domain !== 'digitaloceanspaces.com')
-        ? `${bucket}.${service}.${this.region}.${this.domain}`
-        : `${bucket}.${this.region}.${this.domain}`
+    const host = this.host ? this.host :
+        (this.domain !== 'digitaloceanspaces.com')
+            ? `${bucket}.${service}.${this.region}.${this.domain}`
+            : `${bucket}.${this.region}.${this.domain}`
 
-    const encodedPath = encodePath(path);
+    const encodedPath = this.pathBucket ? encodePath(`/${bucket}/${path}`) : encodePath(`/${path}`);
     const endpoint = `https://${host}${encodedPath}`;
 
     const canonicalUri = encodedPath;
@@ -93,6 +94,8 @@ function S3(config) {
     this.secretKey = config.secretKey;
     this.region = config.region;
     this.domain = (config.domain !== undefined) ? config.domain : defaultDomain;
+    this.host = config.host;
+    this.pathBucket = config.pathBucket;
 }
 
 S3.prototype.getObject = function(params) {
