@@ -23,6 +23,6 @@
   },
   "homepage": "https://github.com/bitquant/amazon-s3#readme",
   "dependencies": {
-    "crypto-js": "3.1.9-1"
+    "crypto-js": "3.2.1"
   }
 }
